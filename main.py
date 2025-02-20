@@ -1,27 +1,19 @@
-import gspread
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-from oauth2client.service_account import ServiceAccountCredentials
 
 # Configuração do Streamlit
 st.set_page_config(page_title="Segurança do Trabalho", layout="wide")
 
+# Nova função para carregar os dados do arquivo CSV local
 @st.cache_data(show_spinner=False)
-def conectar_google_sheets():
+def carregar_dados_csv():
     try:
-        creds = ServiceAccountCredentials.from_json_keyfile_name(
-            filename='acidente-448518-c840121c5e02.json',
-            scopes=[
-                "https://spreadsheets.google.com/feeds",
-                "https://www.googleapis.com/auth/drive",
-            ]
-        )
-        client = gspread.authorize(creds)
-        planilha = client.open_by_key('1dZxc-fLrxlcPy3KpZWJlh1yOVJAOT6ZgXOf78qssBAE').get_worksheet(7)
-        return planilha.get_all_records()
+        # Lê o arquivo CSV armazenado localmente (certifique-se de que o arquivo acidentes.csv esteja na mesma pasta)
+        df = pd.read_csv("acidentes.csv", encoding="utf-8", delimiter=",")
+        return df.to_dict(orient="records")
     except Exception as e:
-        st.error(f"Erro na conexão: {e}")
+        st.error(f"Erro ao ler o arquivo acidentes.csv: {e}")
         return None
 
 @st.cache_data(show_spinner=False)
@@ -50,7 +42,8 @@ def processar_dados(dados):
 def dashboard():
     st.title("Estatísticas de Acidente de Trabalho")
 
-    dados = conectar_google_sheets()
+    # Agora os dados são carregados a partir do arquivo CSV local
+    dados = carregar_dados_csv()
     if not dados:
         return
     df = processar_dados(dados)
@@ -237,7 +230,7 @@ def dashboard():
 
 def medidas_propostas():
     st.title("Estatísticas do Gerenciamento de Riscos")
-    st.write("Esta seção apresenta as medidas propostas advindas dos Programas de Gerenciamento de Riscos (PGR) NR nº 01.")
+    st.write("Esta seção apresenta as medidas propostas advindas dos Programas de Gerenciamento de Riscos (PGR) NR nº 01 - EM CONSTRUÇÃO.")
     st.markdown("""
     ## Medidas Propostas
 
